@@ -6,15 +6,71 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>MNIST drawing test</title>
         <link rel="stylesheet" href="./styles.css" />
+        <!-- icons -->
+        <script
+            src="https://kit.fontawesome.com/52e8749e9d.js"
+            crossorigin="anonymous"
+        ></script>
+        <!-- fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;900&display=swap"
+            rel="stylesheet"
+        />
     </head>
     <body>
-        <canvas id="number-input" width="616" height="616"></canvas>
-        <input type="radio" id="color-white" name="marker-color" value="white" checked>
-        <label for="color-white">Draw</label>
-        <input type="radio" id="color-black" name="marker-color" value="black">
-        <label for="color-black">Erase</label>
-        <button onclick="getPrediction()">Get Prediction</button>
-        <p id="prediction"></p>
+        <div class="wrapper">
+            <div class="content">
+                <div class="description">
+                    <h1><span>MNIST Dataset</span> Neural Net Recognition</h1>
+                    <p>
+                        Draw in the space on the right and see if the ML model
+                        can predict the letter you're writing. Implementation:
+                        uses TensorFlow for a simple fully-connected Neural
+                        Network with one hidden layer of 128 nodes, trained with
+                        10 epochs on the MNIST dataset.
+                    </p>
+                </div>
+                <div class="column-left">
+                    <canvas id="number-input" width="616" height="616"></canvas>
+                </div>
+                <div class="column-right">
+                    <div class="tools-wrapper card">
+                        <div
+                            class="draw tool-card button"
+                            onclick="setMarkerColor('white')"
+                        >
+                            <i class="fa fa-pencil"></i>
+                            Draw
+                        </div>
+                        <div
+                            class="erase tool-card button"
+                            onclick="setMarkerColor('black')"
+                        >
+                            <i class="fa fa-eraser"></i>
+                            Erase
+                        </div>
+
+                        <div
+                            class="restart tool-card button"
+                            onclick="clearInputCanvas()"
+                        >
+                            <i class="fa fa-refresh"></i> Restart
+                        </div>
+                    </div>
+                    <div
+                        class="predict-button card button"
+                        onclick="getPrediction()"
+                    >
+                        PREDICT
+                    </div>
+                    <div class="prediction card">
+                        <p id="prediction"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script src="./index.js" type="text/javascript"></script>
     </body>
 </html>

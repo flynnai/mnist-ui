@@ -18,6 +18,18 @@ const higherResImage = new Array(IMAGE_SIZE * RES_MULTIPLIER)
     .fill(0)
     .map((elt) => new Array(IMAGE_SIZE * RES_MULTIPLIER).fill(0));
 
+let markerColor = "white";
+
+function setMarkerColor(color) {
+    markerColor = color;
+}
+
+function clearInputCanvas() {
+    highResCtx.fillStyle = "black";
+    highResCtx.fillRect(0, 0, highResC.width, highResC.height);
+    pixelateHighRes();
+}
+
 const drawNumber = () => {
     const squareSizePx = c.width / IMAGE_SIZE;
     for (let row = 0; row < IMAGE_SIZE; row++) {
@@ -83,10 +95,7 @@ let prevMouse = null;
 
 c.onmousemove = (e) => {
     const canvasRect = c.getBoundingClientRect();
-    const MARKER_SIZE = c.width / IMAGE_SIZE * 3;
-    const markerColor = document.querySelector(
-        "input[name=marker-color]:checked"
-    ).value;
+    const MARKER_SIZE = (c.width / IMAGE_SIZE) * 3;
 
     let cursorFillStyle = "#fff8";
 
@@ -119,16 +128,24 @@ c.onmousemove = (e) => {
     }
     // draw cursor
     ctx.beginPath();
-    ctx.arc(e.clientX - canvasRect.left, e.clientY - canvasRect.top, MARKER_SIZE / 2, 0, 2*Math.PI);
+    ctx.arc(
+        e.clientX - canvasRect.left,
+        e.clientY - canvasRect.top,
+        MARKER_SIZE / 2,
+        0,
+        2 * Math.PI
+    );
     ctx.fillStyle = cursorFillStyle;
     ctx.fill();
-    if(cursorFillStyle === "black") {
+    if (cursorFillStyle === "black") {
         ctx.strokeStyle = "white";
         ctx.lineWidth = 2;
         ctx.stroke();
     }
-
 };
+
+c.onmouseout = () => drawNumber();
+
 const prettyPrint2dArray = (arr) =>
     console.log(arr.map((row) => row.map((elt) => Math.round(elt))));
 
@@ -161,5 +178,5 @@ const getPrediction = async () => {
     });
 
     console.log("That's definitely a ", guess);
-    document.querySelector('#prediction').innerHTML = guess;
+    document.querySelector("#prediction").innerHTML = guess;
 };
