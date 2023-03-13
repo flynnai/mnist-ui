@@ -82,11 +82,16 @@ const grayscaleRgb = (val) => `rgb(${val}, ${val}, ${val})`;
 let prevMouse = null;
 
 c.onmousemove = (e) => {
-    if (isMouseDown) {
-        const MARKER_SIZE = c.width / IMAGE_SIZE * 3;
+    const canvasRect = c.getBoundingClientRect();
+    const MARKER_SIZE = c.width / IMAGE_SIZE * 3;
+    const markerColor = document.querySelector(
+        "input[name=marker-color]:checked"
+    ).value;
 
+    let cursorFillStyle = "#fff8";
+
+    if (isMouseDown) {
         if (prevMouse) {
-            const canvasRect = c.getBoundingClientRect();
             highResCtx.beginPath();
             highResCtx.moveTo(
                 prevMouse.x - canvasRect.left,
@@ -98,11 +103,9 @@ c.onmousemove = (e) => {
             );
             highResCtx.lineWidth = MARKER_SIZE;
             highResCtx.lineCap = "round";
-            const markerColor = document.querySelector(
-                "input[name=marker-color]:checked"
-            ).value;
             highResCtx.strokeStyle =
                 markerColor === "white" ? grayscaleRgb(255) : grayscaleRgb(0);
+            cursorFillStyle = markerColor;
             highResCtx.stroke();
         } else {
             prevMouse = {};
@@ -111,7 +114,20 @@ c.onmousemove = (e) => {
         prevMouse.y = e.clientY;
 
         pixelateHighRes();
+    } else {
+        drawNumber();
     }
+    // draw cursor
+    ctx.beginPath();
+    ctx.arc(e.clientX - canvasRect.left, e.clientY - canvasRect.top, MARKER_SIZE / 2, 0, 2*Math.PI);
+    ctx.fillStyle = cursorFillStyle;
+    ctx.fill();
+    if(cursorFillStyle === "black") {
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
 };
 const prettyPrint2dArray = (arr) =>
     console.log(arr.map((row) => row.map((elt) => Math.round(elt))));
