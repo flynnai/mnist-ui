@@ -20,13 +20,13 @@ const higherResImage = new Array(IMAGE_SIZE * RES_MULTIPLIER)
 
 const drawNumber = () => {
     const squareSizePx = c.width / IMAGE_SIZE;
-    for (let i = 0; i < IMAGE_SIZE; i++) {
-        for (let j = 0; j < IMAGE_SIZE; j++) {
-            let grayscaleVal = inputImage[i][j];
+    for (let row = 0; row < IMAGE_SIZE; row++) {
+        for (let col = 0; col < IMAGE_SIZE; col++) {
+            let grayscaleVal = inputImage[row][col];
             ctx.fillStyle = `rgb(${grayscaleVal}, ${grayscaleVal}, ${grayscaleVal})`;
             ctx.fillRect(
-                i * squareSizePx,
-                j * squareSizePx,
+                col * squareSizePx,
+                row * squareSizePx,
                 squareSizePx,
                 squareSizePx
             );
@@ -49,14 +49,15 @@ const pixelateHighRes = () => {
     for (let i = 0; i < imageData.data.length; i += 4) {
         // all we need is one value of r, g, or b (since grayscale)
         const grayscale = imageData.data[i];
-        let row = Math.floor(((i / 4) % highResC.width) / squareSizePx);
-        let col = Math.floor(Math.floor(i / 4 / highResC.width) / squareSizePx);
+        let row = Math.floor(Math.floor(i / 4 / highResC.width) / squareSizePx);
+        let col = Math.floor(((i / 4) % highResC.width) / squareSizePx);
         pixelated[row][col] += grayscale;
     }
-    for (let i = 0; i < IMAGE_SIZE; i++) {
-        for (let j = 0; j < IMAGE_SIZE; j++) {
-            pixelated[i][j] = Math.floor(
-                pixelated[i][j] / (squareSizePx * squareSizePx)
+
+    for (let row = 0; row < IMAGE_SIZE; row++) {
+        for (let col = 0; col < IMAGE_SIZE; col++) {
+            pixelated[row][col] = Math.floor(
+                pixelated[row][col] / (squareSizePx * squareSizePx)
             );
         }
     }
@@ -66,7 +67,6 @@ const pixelateHighRes = () => {
 };
 
 drawNumber();
-
 
 // EVENT LISTENERS
 
@@ -83,7 +83,7 @@ let prevMouse = null;
 
 c.onmousemove = (e) => {
     if (isMouseDown) {
-        const MARKER_SIZE = 35;
+        const MARKER_SIZE = c.width / IMAGE_SIZE * 3;
 
         if (prevMouse) {
             const canvasRect = c.getBoundingClientRect();
@@ -98,8 +98,11 @@ c.onmousemove = (e) => {
             );
             highResCtx.lineWidth = MARKER_SIZE;
             highResCtx.lineCap = "round";
-            const markerColor = document.querySelector("input[name=marker-color]:checked").value;
-            highResCtx.strokeStyle = markerColor === "white" ? grayscaleRgb(255) : grayscaleRgb(0);
+            const markerColor = document.querySelector(
+                "input[name=marker-color]:checked"
+            ).value;
+            highResCtx.strokeStyle =
+                markerColor === "white" ? grayscaleRgb(255) : grayscaleRgb(0);
             highResCtx.stroke();
         } else {
             prevMouse = {};
@@ -109,4 +112,38 @@ c.onmousemove = (e) => {
 
         pixelateHighRes();
     }
+};
+const prettyPrint2dArray = (arr) =>
+    console.log(arr.map((row) => row.map((elt) => Math.round(elt))));
+
+const getPrediction = async () => {
+    const normalized = inputImage.map((row) => row.map((elt) => elt / 255));
+    console.log("Sending", normalized);
+
+    const response = await fetch("/get-predictions", {
+        method: "POST",
+        body: JSON.stringify(normalized),
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+    });
+    const data = await response.json();
+    const softmaxes = data[0];
+    let scores = {};
+    for (let i = 0; i < 10; i++) {
+        scores[i] = Math.round(softmaxes[i] * 100) / 100;
+    }
+    console.log("Got response:", scores);
+
+    console.log("Softmaxes:", softmaxes);
+    let guess = 0;
+    softmaxes.forEach((score, i) => {
+        if (score > softmaxes[guess]) {
+            guess = i;
+        }
+    });
+
+    console.log("That's definitely a ", guess);
+    document.querySelector('#prediction').innerHTML = guess;
 };
