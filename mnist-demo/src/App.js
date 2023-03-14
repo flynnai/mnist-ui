@@ -5,6 +5,7 @@ const CANVAS_SIZE = 616;
 // 28 by 28 0-255 grayscale
 const IMAGE_SIZE = 28;
 
+// load tf from CDN
 const tf = window.tf;
 
 const grayscaleRgb = (val) => `rgb(${val}, ${val}, ${val})`;
@@ -20,7 +21,7 @@ function App() {
     const highResCRef = useRef(null);
     const modelRef = useRef(null);
     const [markerColor, setMarkerColor] = useState("white");
-    const [inputImage, setInputImage] = useState(
+    const inputImageRef = useRef(
         new Array(IMAGE_SIZE)
             .fill(0)
             .map((elt) => new Array(IMAGE_SIZE).fill(0))
@@ -36,7 +37,7 @@ function App() {
             highResCtx.fillStyle = "black";
             highResCtx.fillRect(0, 0, highResC.width, highResC.height);
             cRef.current = c;
-            drawNumber(inputImage);
+            drawNumber();
         }
     };
 
@@ -45,7 +46,8 @@ function App() {
         const highResCtx = highResC.getContext("2d");
         highResCtx.fillStyle = "black";
         highResCtx.fillRect(0, 0, highResC.width, highResC.height);
-        setInputImage(pixelateHighRes());
+        inputImageRef.current = pixelateHighRes();
+        drawNumber();
     };
 
     const pixelateHighRes = () => {
@@ -84,7 +86,8 @@ function App() {
         return pixelated;
     };
 
-    const drawNumber = (grayscaleImage) => {
+    const drawNumber = () => {
+        const grayscaleImage = inputImageRef.current;
         const c = cRef.current;
         const ctx = c.getContext("2d");
 
@@ -104,7 +107,9 @@ function App() {
     };
 
     const getPrediction = async () => {
-        const normalized = inputImage.map((row) => row.map((elt) => elt / 255));
+        const normalized = inputImageRef.current.map((row) =>
+            row.map((elt) => elt / 255)
+        );
         console.log("Sending", normalized);
 
         // const response = await fetch("/get-predictions", {
@@ -161,7 +166,6 @@ function App() {
 
         let isMouseDown = false;
         let prevMouse = null;
-        let localInputImage = inputImage;
 
         const onMouseDown = () => (isMouseDown = true);
         const onMouseUp = () => {
@@ -199,11 +203,10 @@ function App() {
                 prevMouse.x = e.clientX;
                 prevMouse.y = e.clientY;
 
-                localInputImage = pixelateHighRes();
-                setInputImage(localInputImage);
+                inputImageRef.current = pixelateHighRes();
             }
 
-            drawNumber(localInputImage);
+            drawNumber();
 
             // draw cursor
             ctx.beginPath();
@@ -222,7 +225,7 @@ function App() {
                 ctx.stroke();
             }
         };
-        const onMouseOut = () => drawNumber(localInputImage);
+        const onMouseOut = () => drawNumber();
 
         c.addEventListener("mousedown", onMouseDown);
         window.addEventListener("mouseup", onMouseUp);
