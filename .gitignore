@@ -1,2 +1,5 @@
 env
 mnist-sequential
+mnist-sequential.hdf5
+node_modules
+tfjs_trained_model

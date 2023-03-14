@@ -846,23 +846,17 @@ from flask import Flask, send_file, request
 from predict import classify_number
 import numpy as np
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 
-@app.route('/')
+
+@app.route("/")
 def index():
     return send_file("index.html")
 
-@app.route('/styles.css')
-def styles():
-    return send_file("styles.css")
 
-@app.route('/index.js')
-def js():
-    return send_file("index.js")
-
-
-@app.route('/get-predictions', methods=["POST"])
+@app.route("/get-predictions", methods=["POST"])
 def get_predictions():
     return classify_number(np.array(request.json)).tolist()
 
-app.run(host='0.0.0.0', port=81)
+
+app.run(host="0.0.0.0", port=81)

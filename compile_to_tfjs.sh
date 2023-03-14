@@ -1,0 +1,1 @@
+tensorflowjs_converter --input_format=keras mnist-sequential.hdf5  ./static/js-version/js_model
