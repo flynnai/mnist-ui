@@ -183,16 +183,22 @@ const getPrediction = async () => {
     console.log("That's definitely a ", guess);
     document.querySelector("#prediction").innerHTML = guess;
 
-    // const h = await model.fit(
-    //     tf.tensor3d([normalized], [1, 28, 28]),
-    //     tf.tensor3d([[[1]]], [1, 1, 1]),
-    //     {
-    //         batchSize: 4,
-    //         epochs: 3,
-    //     }
-    // );
-    // console.log(h);
+    const h = await model.fit(
+        tf.tensor3d([normalized], [1, 28, 28]),
+        tf.tensor2d([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]], [1, 10]),
+        {
+            batchSize: 4,
+            epochs: 3,
+        }
+    );
+    console.log(h);
 };
+
+const softmax = (arr) =>
+    arr.map(
+        (elt) =>
+            Math.exp(elt) / arr.reduce((curr, acc) => curr + Math.exp(acc), 0)
+    );
 
 const test_image = [
     [
@@ -340,6 +346,7 @@ const loadTfModel = async () => {
     model = await tf.loadLayersModel(
         "./static/js-version/tfjs_trained_model/model.json"
     );
+    model.compile({ optimizer: "adam", loss: "categoricalCrossentropy" });
 };
 
 loadTfModel();

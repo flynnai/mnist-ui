@@ -33,7 +33,9 @@ model.fit(x_train, y_train, epochs=5)
 model.evaluate(x_test, y_test, verbose=2)
 
 # create softmaxed version
-probability_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
+# probability_model = tf.keras.Sequential([model, tf.keras.layers.Softmax()])
 
+# SAVE NON-SOFTMAX version:
+probability_model = model
 
 probability_model.save("mnist-sequential.hdf5")
