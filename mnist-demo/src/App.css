@@ -20,7 +20,6 @@ h1 span {
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: center;
     height: 100vh;
 }
 
@@ -103,7 +102,7 @@ canvas#number-input {
     font-size: 20px;
 }
 
-.prediction {
+/* .prediction {
     border-radius: 15px;
 
     background-color: #e96479;
@@ -113,12 +112,48 @@ canvas#number-input {
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
-}
+} */
 
-.prediction p {
+/* .prediction p {
     font-size: 80px;
     margin: 0;
     text-align: center;
+    color: white;
+} */
+
+.ranked-predictions {
+    position: relative;
+    overflow: hidden;
+}
+
+.ranking {
+    position: absolute;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 75px;
+    border-bottom: 5px;
+    box-sizing: border-box;
+    background: #e96479;
+    border-radius: 15px;
+    opacity: 1;
+
+    top: 800px;
+    /* the magic */
+    transition: top 0.8s, opacity 0.2s;
+}
+
+.ranking .predicted-class {
+    font-size: 30px;
+    color: white;
+    display: flex;
+}
+
+.ranking .percentage {
+    display: flex;
+    font-size: 14px;
     color: white;
 }
 

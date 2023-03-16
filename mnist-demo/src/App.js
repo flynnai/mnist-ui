@@ -15,12 +15,57 @@ const softmax = (arr) =>
             Math.exp(elt) / arr.reduce((curr, acc) => curr + Math.exp(acc), 0)
     );
 
+const Ranking = React.memo(({ group, priority, prob }) => (
+    <div
+        className="ranking"
+        style={{
+            top: `${Math.min(priority, 4) * 80}px`,
+            opacity: priority > 3 ? 0 : 1,
+        }}
+    >
+        <span className="predicted-class">{group}</span>
+        <span className="percentage">{Math.round(prob * 100)}%</span>
+    </div>
+));
+function RankedPredictions({ softmaxes }) {
+    const HEIGHT = 320;
+    const priorityByKey = Object.fromEntries(
+        softmaxes
+            .map((prob, group) => ({
+                prob,
+                group,
+            }))
+            .sort((a, b) => b.prob - a.prob)
+            .map(({ prob, group }, index) => [group, index])
+    );
+    // console.log("Softmaxes:", sortedGroups);
+
+    console.log(priorityByKey);
+    return (
+        <div
+            className="ranked-predictions card"
+            style={{ height: `${HEIGHT}px` }}
+        >
+            {softmaxes.map((prob, index) => (
+                <Ranking
+                    group={index}
+                    priority={priorityByKey[index]}
+                    prob={prob}
+                    key={index}
+                />
+            ))}
+        </div>
+    );
+}
+
 function App() {
     // Component state, refs
     const cRef = useRef(null);
     const highResCRef = useRef(null);
     const modelRef = useRef(null);
     const [markerColor, setMarkerColor] = useState("white");
+    const [guess, setGuess] = useState(" ");
+    const [softmaxes, setSoftmaxes] = useState(new Array(10).fill(0));
     const inputImageRef = useRef(
         new Array(IMAGE_SIZE)
             .fill(0)
@@ -33,7 +78,9 @@ function App() {
             let highResC = highResCRef.current;
             highResC.width = c.width;
             highResC.height = c.height;
-            const highResCtx = highResC.getContext("2d");
+            const highResCtx = highResC.getContext("2d", {
+                willReadFrequently: true,
+            });
             highResCtx.fillStyle = "black";
             highResCtx.fillRect(0, 0, highResC.width, highResC.height);
             cRef.current = c;
@@ -43,7 +90,9 @@ function App() {
 
     const clearInputCanvas = () => {
         const highResC = highResCRef.current;
-        const highResCtx = highResC.getContext("2d");
+        const highResCtx = highResC.getContext("2d", {
+            willReadFrequently: true,
+        });
         highResCtx.fillStyle = "black";
         highResCtx.fillRect(0, 0, highResC.width, highResC.height);
         inputImageRef.current = pixelateHighRes();
@@ -52,7 +101,9 @@ function App() {
 
     const pixelateHighRes = () => {
         const highResC = highResCRef.current;
-        const highResCtx = highResC.getContext("2d");
+        const highResCtx = highResC.getContext("2d", {
+            willReadFrequently: true,
+        });
 
         const imageData = highResCtx.getImageData(
             0,
@@ -126,6 +177,7 @@ function App() {
         const softmaxes = (
             await model.predict(tf.tensor3d([normalized], [1, 28, 28])).array()
         )[0];
+        setSoftmaxes(softmax(softmaxes));
         let scores = {};
         for (let i = 0; i < 10; i++) {
             scores[i] = Math.round(softmaxes[i] * 100) / 100;
@@ -141,7 +193,7 @@ function App() {
         });
 
         console.log("That's definitely a ", guess);
-        document.querySelector("#prediction").innerHTML = guess;
+        setGuess(guess);
 
         const h = await model.fit(
             tf.tensor3d([normalized], [1, 28, 28]),
@@ -162,7 +214,9 @@ function App() {
 
         const ctx = c.getContext("2d");
         const highResC = highResCRef.current;
-        const highResCtx = highResC.getContext("2d");
+        const highResCtx = highResC.getContext("2d", {
+            willReadFrequently: true,
+        });
 
         let isMouseDown = false;
         let prevMouse = null;
@@ -280,7 +334,6 @@ function App() {
                         ref={initializeCanvases}
                         width={`${CANVAS_SIZE}px`}
                         height={`${CANVAS_SIZE}px`}
-                        willReadFrequently="true"
                     />
                 </div>
                 <div className="column-right">
@@ -313,9 +366,10 @@ function App() {
                     >
                         PREDICT
                     </div>
-                    <div className="prediction card">
-                        <p id="prediction"></p>
-                    </div>
+                    {/* <div className="prediction card">
+                        <p id="prediction">{guess}</p>
+                    </div> */}
+                    <RankedPredictions softmaxes={softmaxes} />
                 </div>
             </div>
         </div>
