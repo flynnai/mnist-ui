@@ -9,24 +9,36 @@ const IMAGE_SIZE = 28;
 const tf = window.tf;
 
 const grayscaleRgb = (val) => `rgb(${val}, ${val}, ${val})`;
-const softmax = (arr) =>
-    arr.map(
-        (elt) =>
-            Math.exp(elt) / arr.reduce((curr, acc) => curr + Math.exp(acc), 0)
-    );
 
-const Ranking = React.memo(({ group, priority, prob }) => (
-    <div
-        className="ranking"
-        style={{
-            top: `${Math.min(priority, 4) * 80}px`,
-            opacity: priority > 3 ? 0 : 1,
-        }}
-    >
-        <span className="predicted-class">{group}</span>
-        <span className="percentage">{Math.round(prob * 100)}%</span>
-    </div>
-));
+const joinClasses = (...args) => args.filter(Boolean).join(" ");
+
+const Ranking = React.memo(({ group, priority, prob }) => {
+    const [displayedProb, setDisplayedProb] = useState(prob);
+    useEffect(() => {
+        const animate = (ticksLeft) => {
+            setDisplayedProb((curr) => curr + (prob - curr) / 4);
+            if (ticksLeft > 0) {
+                setTimeout(() => animate(ticksLeft - 1), 60);
+            }
+        };
+        animate(20);
+    }, [prob]);
+    return (
+        <div
+            className={joinClasses("ranking", priority === 0 && "chosen")}
+            style={{
+                top: `${Math.min(priority, 4) * 80}px`,
+                opacity: priority > 3 ? 0 : 1,
+            }}
+        >
+            <span className="predicted-class">{group}</span>
+            <span className="percentage">
+                {Math.round(displayedProb * 100)}%
+            </span>
+        </div>
+    );
+});
+
 function RankedPredictions({ softmaxes }) {
     const HEIGHT = 320;
     const priorityByKey = Object.fromEntries(
@@ -64,7 +76,6 @@ function App() {
     const highResCRef = useRef(null);
     const modelRef = useRef(null);
     const [markerColor, setMarkerColor] = useState("white");
-    const [guess, setGuess] = useState(" ");
     const [softmaxes, setSoftmaxes] = useState(new Array(10).fill(0));
     const inputImageRef = useRef(
         new Array(IMAGE_SIZE)
@@ -161,49 +172,24 @@ function App() {
         const normalized = inputImageRef.current.map((row) =>
             row.map((elt) => elt / 255)
         );
-        console.log("Sending", normalized);
 
-        // const response = await fetch("/get-predictions", {
-        //     method: "POST",
-        //     body: JSON.stringify(normalized),
-        //     headers: {
-        //         Accept: "application/json",
-        //         "Content-Type": "application/json",
-        //     },
-        // });
-        // const data = await response.json();
-        // const softmaxes = data[0];
         const model = modelRef.current;
-        const softmaxes = (
+        const newSoftmaxes = (
             await model.predict(tf.tensor3d([normalized], [1, 28, 28])).array()
         )[0];
-        setSoftmaxes(softmax(softmaxes));
-        let scores = {};
-        for (let i = 0; i < 10; i++) {
-            scores[i] = Math.round(softmaxes[i] * 100) / 100;
-        }
-        console.log("Got response:", scores);
 
-        console.log("Softmaxes:", softmaxes);
-        let guess = 0;
-        softmaxes.forEach((score, i) => {
-            if (score > softmaxes[guess]) {
-                guess = i;
-            }
-        });
+        setSoftmaxes(newSoftmaxes);
+        console.log("Softmaxes:", newSoftmaxes);
 
-        console.log("That's definitely a ", guess);
-        setGuess(guess);
-
-        const h = await model.fit(
-            tf.tensor3d([normalized], [1, 28, 28]),
-            tf.tensor2d([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]], [1, 10]),
-            {
-                batchSize: 4,
-                epochs: 3,
-            }
-        );
-        console.log(h);
+        // const h = await model.fit(
+        //     tf.tensor3d([normalized], [1, 28, 28]),
+        //     tf.tensor2d([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]], [1, 10]),
+        //     {
+        //         batchSize: 4,
+        //         epochs: 3,
+        //     }
+        // );
+        // console.log(h);
     };
 
     useEffect(() => {
@@ -225,6 +211,7 @@ function App() {
         const onMouseUp = () => {
             isMouseDown = false;
             prevMouse = null;
+            getPrediction();
         };
         const onMouseMove = (e) => {
             const canvasRect = c.getBoundingClientRect();
@@ -360,14 +347,11 @@ function App() {
                             <i className="fa fa-refresh"></i> Restart
                         </div>
                     </div>
-                    <div
+                    {/* <div
                         className="predict-button card button"
                         onClick={() => getPrediction()}
                     >
                         PREDICT
-                    </div>
-                    {/* <div className="prediction card">
-                        <p id="prediction">{guess}</p>
                     </div> */}
                     <RankedPredictions softmaxes={softmaxes} />
                 </div>

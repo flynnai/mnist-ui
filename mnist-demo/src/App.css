@@ -102,25 +102,6 @@ canvas#number-input {
     font-size: 20px;
 }
 
-/* .prediction {
-    border-radius: 15px;
-
-    background-color: #e96479;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    width: 100%;
-    box-sizing: border-box;
-} */
-
-/* .prediction p {
-    font-size: 80px;
-    margin: 0;
-    text-align: center;
-    color: white;
-} */
-
 .ranked-predictions {
     position: relative;
     overflow: hidden;
@@ -155,6 +136,10 @@ canvas#number-input {
     display: flex;
     font-size: 14px;
     color: white;
+}
+
+.ranking.chosen {
+    border: 6px solid #4d455d;
 }
 
 .button {
