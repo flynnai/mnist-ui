@@ -336,11 +336,22 @@ function App() {
                         <span>MNIST Dataset</span> Neural Net Recognition
                     </h1>
                     <p>
-                        Draw in the space on the right and see if the ML model
-                        can predict the letter you're writing. Implementation:
-                        uses TensorFlow for a simple fully-connected Neural
-                        Network with one hidden layer of 128 nodes, trained with
-                        10 epochs on the MNIST dataset.
+                        <b>Draw a number</b> in the space on the right and see
+                        if the ML model can recognize it correctly.
+                        Implementation: a simple fully-connected Neural Network
+                        with 128 hidden nodes. Written in TensorFlow, trained in
+                        Python with on 60,000 images from the{" "}
+                        <a
+                            href="https://en.wikipedia.org/wiki/MNIST_database"
+                            target="_blank"
+                        >
+                            MNIST dataset
+                        </a>
+                        , and run locally via TensorFlow.js in-browser.
+                    </p>
+                    <p>
+                        Model guessed wrong? Click the WRONG button to retrain
+                        for a few epochs to recognize that sample.
                     </p>
                 </div>
                 <div className="column-left">

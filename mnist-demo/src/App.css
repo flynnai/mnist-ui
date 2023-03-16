@@ -178,3 +178,14 @@ canvas#number-input {
         opacity: 1;
     }
 }
+
+a {
+    color: rgb(29, 172, 216);
+    /* font-weight: 400; */
+    text-decoration: none;
+}
+
+a:hover {
+    color: rgb(71, 206, 247);
+    transition: color 0.2s;
+}
