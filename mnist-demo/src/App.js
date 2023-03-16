@@ -180,16 +180,6 @@ function App() {
 
         setSoftmaxes(newSoftmaxes);
         console.log("Softmaxes:", newSoftmaxes);
-
-        // const h = await model.fit(
-        //     tf.tensor3d([normalized], [1, 28, 28]),
-        //     tf.tensor2d([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]], [1, 10]),
-        //     {
-        //         batchSize: 4,
-        //         epochs: 3,
-        //     }
-        // );
-        // console.log(h);
     };
 
     useEffect(() => {
@@ -206,12 +196,19 @@ function App() {
 
         let isMouseDown = false;
         let prevMouse = null;
+        let didClickCanvas = false;
 
-        const onMouseDown = () => (isMouseDown = true);
+        const onMouseDown = () => {
+            isMouseDown = true;
+            didClickCanvas = true;
+        };
         const onMouseUp = () => {
             isMouseDown = false;
             prevMouse = null;
-            getPrediction();
+            if (didClickCanvas) {
+                getPrediction();
+            }
+            didClickCanvas = false;
         };
         const onMouseMove = (e) => {
             const canvasRect = c.getBoundingClientRect();
@@ -299,6 +296,38 @@ function App() {
         }
     }, []);
 
+    const openRetrainModel = async () => {
+        let response = window.prompt("Which number should it have been?");
+        while (
+            isNaN(parseInt(response)) ||
+            parseInt(response) < 0 ||
+            parseInt(response) > 9
+        ) {
+            response = window.prompt(
+                "Invalid number. Please enter an integer from 0 to 9."
+            );
+        }
+
+        console.log("Training for number:", parseInt(response));
+
+        const model = modelRef.current;
+        const normalized = inputImageRef.current.map((row) =>
+            row.map((elt) => elt / 255)
+        );
+        const oneHot = new Array(10).fill(0);
+        oneHot[parseInt(response)] = 1;
+        const h = await model.fit(
+            tf.tensor3d([normalized], [1, 28, 28]),
+            tf.tensor2d([oneHot], [1, 10]),
+            {
+                batchSize: 1,
+                epochs: 10,
+            }
+        );
+        console.log(h);
+        getPrediction();
+    };
+
     return (
         <div className="wrapper">
             <div className="content">
@@ -344,16 +373,17 @@ function App() {
                             className="restart tool-card button"
                             onClick={() => clearInputCanvas()}
                         >
-                            <i className="fa fa-refresh"></i> Restart
+                            <i className="fa fa-ban"></i> Clear
                         </div>
                     </div>
-                    {/* <div
-                        className="predict-button card button"
-                        onClick={() => getPrediction()}
-                    >
-                        PREDICT
-                    </div> */}
+
                     <RankedPredictions softmaxes={softmaxes} />
+                    <div
+                        className="retrain-button card button"
+                        onClick={() => openRetrainModel()}
+                    >
+                        WRONG?
+                    </div>
                 </div>
             </div>
         </div>
