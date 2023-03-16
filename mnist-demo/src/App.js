@@ -344,6 +344,7 @@ function App() {
                         <a
                             href="https://en.wikipedia.org/wiki/MNIST_database"
                             target="_blank"
+                            rel="noopener noreferrer"
                         >
                             MNIST dataset
                         </a>

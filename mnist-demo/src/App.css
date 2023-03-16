@@ -52,6 +52,7 @@ canvas#number-input {
 .tools-wrapper {
     display: flex;
     flex-flow: row wrap;
+    justify-content: center;
     border-radius: 15px;
     padding: 10px;
     padding-right: 0;
